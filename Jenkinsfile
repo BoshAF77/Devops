@@ -16,16 +16,21 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: "${env.GIT_BRANCH}",
+                git(
+                    branch: "${env.GIT_BRANCH}",
                     url: "${env.GIT_URL}",
                     credentialsId: "${env.CREDENTIALS_ID}"
+                )
             }
         }
 
         stage('Get Version') {
             steps {
                 script {
-                    env.APP_VERSION = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+                    env.APP_VERSION = sh(
+                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                        returnStdout: true
+                    ).trim()
                     echo "Application version: ${env.APP_VERSION}"
                 }
             }
@@ -33,23 +38,29 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean package'  // This will compile and package the JAR
+                sh 'mvn clean package'  // Compile and package the JAR
             }
         }
 
         stage('Mockito Tests') {
             steps {
-                sh 'mvn test'
+                sh 'mvn test'  // Run the test suite
             }
         }
+
         stage('Build Docker Image (Spring Part)') {
-                    steps {
-                        script {
-                            def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}") // Tagging the image with the app version
-                            echo "Built Docker Image: ${dockerImage.id}"
-                        }
+            steps {
+                script {
+                    try {
+                        def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}")
+                        echo "Built Docker Image: ${dockerImage.id}"
+                    } catch (Exception e) {
+                        echo "Error building Docker image: ${e.getMessage()}"
+                        error("Docker image build failed.")
                     }
                 }
+            }
+        }
 
         stage('SonarQube Analysis') {
             steps {
@@ -68,7 +79,5 @@ pipeline {
                 }
             }
         }
-
-
     }
 }
