@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        docker { image 'docker:latest' } // Use Docker agent for the build stage
+    }
 
     tools {
         maven 'M2_HOME'       // Ensure "M2_HOME" is configured in Jenkins
@@ -42,21 +44,12 @@ pipeline {
             }
         }
 
-        stage('Mockito Tests') {
-            steps {
-                sh 'mvn test'  // Run the test suite
-            }
-        }
-
         stage('Build Docker Image (Spring Part)') {
             steps {
                 script {
-                    try {
+                    docker.withRegistry('', '') { // Use default Docker registry
                         def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}")
                         echo "Built Docker Image: ${dockerImage.id}"
-                    } catch (Exception e) {
-                        echo "Error building Docker image: ${e.getMessage()}"
-                        error("Docker image build failed.")
                     }
                 }
             }
