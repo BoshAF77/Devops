@@ -11,6 +11,7 @@ pipeline {
         GIT_BRANCH = 'Devops'
         CREDENTIALS_ID = 'GitHub_Credentials'
         DOCKER_IMAGE_NAME = 'AnisF/alpine'
+        DOCKER_CREDENTIALS_ID = 'Docker_Credentials'
     }
 
     stages {
@@ -62,6 +63,40 @@ pipeline {
                         }
                     }
                 }
+                 stage('Push Docker Image to Docker Hub') {
+                            steps {
+                                script {
+                                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID,
+                                                                     usernameVariable: 'DOCKERHUB_USERNAME',
+                                                                     passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                                        // Log in to Docker Hub
+                                        sh '''
+                                            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+                                        '''
+
+                                        // Push the image to Docker Hub with the correct tag
+                                        sh "docker push ${DOCKER_IMAGE_NAME}:${env.APP_VERSION}"
+
+                                        // Logout from Docker Hub
+                                        sh "docker logout"
+                                    }
+                                }
+                            }
+                        }
+
+                        stage('Debug Workspace') {
+                            steps {
+                                sh 'ls -l ${WORKSPACE}'
+                            }
+                        }
+
+                        stage('Docker compose (BackEnd MySql)') {
+                            steps {
+                                script {
+                                    sh 'docker compose -f ${WORKSPACE}/Docker-compose.yml up -d'
+                                }
+                            }
+                        }
 
         stage('SonarQube Analysis') {
             steps {
