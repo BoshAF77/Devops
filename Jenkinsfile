@@ -35,3 +35,4 @@ pipeline {
                     sh 'mvn clean package'  // This will compile and package the JAR
                 }
             }
+}
