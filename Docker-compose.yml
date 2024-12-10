@@ -1,6 +1,6 @@
 services:
   app:
-    image: alpine-container  # Use dynamic version tag
+    image: alpine-container # Use dynamic version tag
     build: ./
     container_name: app_container
     ports:

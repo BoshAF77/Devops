@@ -79,7 +79,7 @@ pipeline {
           stage('Docker Compose (BackEnd MySql)') {
               steps {
                   script {
-                      sh 'docker compose -f ${WORKSPACE}/docker-compose.yml up -d'
+                      sh 'docker compose -f ${WORKSPACE}/compose/docker-compose.yml up -d'
                   }
               }
           }
