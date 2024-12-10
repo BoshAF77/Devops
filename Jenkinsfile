@@ -107,5 +107,59 @@ pipeline {
                   }
               }
           }
+
+
+           stage('Build and Run Grafana') {
+                              steps {
+                                  script {
+                                      // Stop and remove the existing Grafana container if it exists
+                                      sh 'docker rm -f grafana || true'
+
+                                      // Run Grafana container
+                                      sh """
+                                      docker run -d --name grafana \
+                                          -p 3000:3000 \
+                                          grafana/grafana
+                                      """
+                                  }
+                              }
+                          }
+
+                          stage('Build and Run Prometheus') {
+                              steps {
+                                  script {
+                                      // Stop and remove the existing Prometheus container if it exists
+                                      sh 'docker rm -f prometheus-p || true'
+
+                                      // Run Prometheus container
+                                      sh """
+                                      docker run -d --name prometheus-p \
+                                          -p 9091:9091 \
+                                          -v \$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
+                                          prom/prometheus
+                                      """
+                                  }
+                              }
+                          }
+              }
+
+              post {
+                  always {
+                      archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
+                  }
+                  success {
+                      echo 'Pipeline executed successfully!'
+                      // Send success email
+                      mail to: 'kdidifiras30@gmail.com',
+                          subject: "Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                          body: "Good news! The pipeline ${env.JOB_NAME} has completed successfully. Check the details here: ${env.BUILD_URL}"
+                  }
+                  failure {
+                      echo 'Pipeline failed.'
+                      // Send failure email
+                      mail to: 'anisfarjallah0705@@gmail.com',
+                          subject: "Jenkins Pipeline Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                          body: "Unfortunately, the pipeline ${env.JOB_NAME} has failed. Please check the details here: ${env.BUILD_URL}"
+                  }
       }
   }
