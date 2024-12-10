@@ -10,112 +10,96 @@ pipeline {
         GIT_URL = 'https://github.com/BoshAF77/Devops.git'
         GIT_BRANCH = 'Devops'
         CREDENTIALS_ID = 'GitHub_Credentials'
-        DOCKER_IMAGE_NAME = 'AnisF/alpine'
+        DOCKER_IMAGE_NAME = 'anisfarjallah7/alpine'
         DOCKER_CREDENTIALS_ID = 'Docker_Credentials'
     }
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: "${env.GIT_BRANCH}",
-                    url: "${env.GIT_URL}",
-                    credentialsId: "${env.CREDENTIALS_ID}"
-            }
-        }
+   stages {
+          stage('Checkout Code') {
+              steps {
+                  git branch: "${env.GIT_BRANCH}",
+                      url: "${env.GIT_URL}",
+                      credentialsId: "${env.CREDENTIALS_ID}"
+              }
+          }
 
-        stage('Get Version') {
-            steps {
-                script {
-                    env.APP_VERSION = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
-                    echo "Application version: ${env.APP_VERSION}"
-                }
-            }
-        }
+          stage('Get Version') {
+              steps {
+                  script {
+                      env.APP_VERSION = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+                      echo "Application version: ${env.APP_VERSION}"
+                  }
+              }
+          }
 
-        stage('Build') {
-            steps {
-                sh 'mvn clean package'  // This will compile and package the JAR
-            }
-        }
+          stage('Build') {
+              steps {
+                  sh 'mvn clean package'
+              }
+          }
 
-        stage('Mockito Tests') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-         stage('Verify JAR File') {
-                    steps {
-                        script {
-                            def jarFile = sh(script: 'ls -1 target/*.jar', returnStdout: true).trim()
-                            if (!jarFile) {
-                                error("No JAR file found!")
-                            } else {
-                                echo "JAR file found: ${jarFile}"
-                            }
-                        }
-                    }
-                }
-        stage('Build Docker Image (Spring Part)') {
-                    steps {
-                        script {
-                            def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}") // Tagging the image with the app version
-                            echo "Built Docker Image: ${dockerImage.id}"
-                        }
-                    }
-                }
-                 stage('Push Docker Image to Docker Hub') {
-                            steps {
-                                script {
-                                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID,
-                                                                     usernameVariable: 'DOCKERHUB_USERNAME',
-                                                                     passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-                                        // Log in to Docker Hub
-                                        sh '''
-                                            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-                                        '''
+          stage('Verify JAR File') {
+              steps {
+                  script {
+                      def jarFile = sh(script: 'ls -1 target/*.jar', returnStdout: true).trim()
+                      if (!jarFile) {
+                          error("No JAR file found!")
+                      } else {
+                          echo "JAR file found: ${jarFile}"
+                      }
+                  }
+              }
+          }
 
-                                        // Push the image to Docker Hub with the correct tag
-                                        sh "docker push ${DOCKER_IMAGE_NAME}:${env.APP_VERSION}"
+          stage('Build Docker Image') {
+              steps {
+                  script {
+                      def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}")
+                      echo "Built Docker Image: ${dockerImage.id}"
+                  }
+              }
+          }
 
-                                        // Logout from Docker Hub
-                                        sh "docker logout"
-                                    }
-                                }
-                            }
-                        }
+          stage('Push Docker Image to Docker Hub') {
+              steps {
+                  script {
+                      withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID,
+                                                       usernameVariable: 'DOCKERHUB_USERNAME',
+                                                       passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                          sh '''
+                              echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+                          '''
+                          sh "docker push ${DOCKER_IMAGE_NAME}:${env.APP_VERSION}"
+                          sh "docker logout"
+                      }
+                  }
+              }
+          }
 
-                        stage('Debug Workspace') {
-                            steps {
-                                sh 'ls -l ${WORKSPACE}'
-                            }
-                        }
+          stage('Docker Compose (BackEnd MySql)') {
+              steps {
+                  script {
+                      sh 'docker compose -f ${WORKSPACE}/docker-compose.yml up -d'
+                  }
+              }
+          }
 
-                        stage('Docker compose (BackEnd MySql)') {
-                            steps {
-                                script {
-                                    sh 'docker compose -f ${WORKSPACE}/Docker-compose.yml up -d'
-                                }
-                            }
-                        }
+          stage('SonarQube Analysis') {
+              steps {
+                  withCredentials([string(credentialsId: 'SonarQube_Token', variable: 'SONAR_TOKEN')]) {
+                      sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                  }
+              }
+          }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'SonarQube_Token', variable: 'SONAR_TOKEN')]) {
-                    sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
-                }
-            }
-        }
-
-        stage('Deploy to Nexus') {
-            steps {
-                script {
-                    withEnv(["MAVEN_HOME=${tool 'M2_HOME'}"]) {
-                        sh 'mvn deploy -s /usr/share/maven/conf/settings.xml'
-                    }
-                }
-            }
-        }
-
-
-    }
-}
+          stage('Deploy to Nexus') {
+              steps {
+                  script {
+                      withEnv(["MAVEN_HOME=${tool 'M2_HOME'}"]) {
+                          sh 'mvn deploy -s /usr/share/maven/conf/settings.xml'
+                      }
+                  }
+              }
+          }
+      }
+  }
