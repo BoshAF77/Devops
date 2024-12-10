@@ -10,9 +10,7 @@ pipeline {
         GIT_URL = 'https://github.com/BoshAF77/Devops.git'
         GIT_BRANCH = 'Devops'
         CREDENTIALS_ID = 'GitHub_Credentials'
-        SONAR_TOKEN = credentials('SonarQube_Token')
-        DOCKER_IMAGE_NAME = ' AnisF/alpine:1.0.0'
-
+        DOCKER_IMAGE_NAME = 'AnisF/alpine'
     }
 
     stages {
@@ -38,31 +36,38 @@ pipeline {
                 sh 'mvn clean package'  // This will compile and package the JAR
             }
         }
+
         stage('Mockito Tests') {
-                    steps {
-                        sh 'mvn test'
-                    }
-                }
+            steps {
+                sh 'mvn test'
+            }
+        }
+
         stage('SonarQube Analysis') {
-                      steps {
-                           sh 'mvn sonar:sonar'
-                          }
-                      }
+            steps {
+                withCredentials([string(credentialsId: 'SonarQube_Token', variable: 'SONAR_TOKEN')]) {
+                    sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                }
+            }
+        }
+
         stage('Deploy to Nexus') {
-                                    steps {
-                                        script {
-                                            withEnv(["PATH+MAVEN=${MAVEN_HOME}/bin"]) {
-                                                sh 'mvn deploy -s /usr/share/maven/conf/settings.xml'
-                                            }
-                                        }
-                                    }
-                                }
-         stage('Build Docker Image (Spring Part)') {
-                    steps {
-                        script {
-                            def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}") // Tagging the image with the app version
-                        }
+            steps {
+                script {
+                    withEnv(["MAVEN_HOME=${tool 'M2_HOME'}"]) {
+                        sh 'mvn deploy -s /usr/share/maven/conf/settings.xml'
                     }
                 }
+            }
+        }
+
+        stage('Build Docker Image (Spring Part)') {
+            steps {
+                script {
+                    def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}") // Tagging the image with the app version
+                    echo "Built Docker Image: ${dockerImage.id}"
+                }
+            }
+        }
     }
 }
