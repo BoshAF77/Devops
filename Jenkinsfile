@@ -10,6 +10,8 @@ pipeline {
         GIT_URL = 'https://github.com/BoshAF77/Devops.git'
         GIT_BRANCH = 'Devops'
         CREDENTIALS_ID = 'GitHub_Credentials'
+        SONAR_TOKEN = credentials('SonarQube_Token')
+
     }
 
     stages {
@@ -40,5 +42,10 @@ pipeline {
                         sh 'mvn test'
                     }
                 }
+        stage('SonarQube Analysis') {
+                      steps {
+                           sh 'mvn sonar:sonar'
+                          }
+                      }
     }
 }
