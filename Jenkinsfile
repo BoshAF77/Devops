@@ -10,7 +10,7 @@ pipeline {
         GIT_URL = 'https://github.com/BoshAF77/Devops.git'
         GIT_BRANCH = 'Devops'
         CREDENTIALS_ID = 'GitHub_Credentials'
-        DOCKER_IMAGE_NAME = 'AnisF/alpine'
+        DOCKER_IMAGE_NAME = 'alpine-container'
     }
 
     stages {
