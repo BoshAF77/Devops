@@ -75,6 +75,12 @@ pipeline {
                   }
               }
           }
+            stage('Debug Workspace') {
+                      steps {
+                          sh 'ls -l ${WORKSPACE}'
+                      }
+                  }
+
 
           stage('Docker Compose (BackEnd MySql)') {
               steps {
