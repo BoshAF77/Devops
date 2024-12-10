@@ -43,6 +43,18 @@ pipeline {
                 sh 'mvn clean package'  // Compile and package the JAR
             }
         }
+        stage('Verify JAR File') {
+                    steps {
+                        script {
+                            def jarFile = sh(script: 'ls -1 target/*.jar', returnStdout: true).trim()
+                            if (!jarFile) {
+                                error("No JAR file found!")
+                            } else {
+                                echo "JAR file found: ${jarFile}"
+                            }
+                        }
+                    }
+                }
 
         stage('Build Docker Image (Spring Part)') {
             steps {
