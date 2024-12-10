@@ -23,3 +23,6 @@ services:
       MYSQL_DATABASE: db
     volumes:
       - mysql_data:/var/lib/mysql
+
+  volumes:
+    mysql_data:
