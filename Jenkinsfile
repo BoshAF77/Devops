@@ -11,6 +11,7 @@ pipeline {
         GIT_BRANCH = 'Devops'
         CREDENTIALS_ID = 'GitHub_Credentials'
         SONAR_TOKEN = credentials('SonarQube_Token')
+        DOCKER_IMAGE_NAME = ' AnisF/alpine:1.0.0'
 
     }
 
@@ -56,5 +57,12 @@ pipeline {
                                         }
                                     }
                                 }
+         stage('Build Docker Image (Spring Part)') {
+                    steps {
+                        script {
+                            def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}") // Tagging the image with the app version
+                        }
+                    }
+                }
     }
 }
