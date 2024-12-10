@@ -42,6 +42,14 @@ pipeline {
                 sh 'mvn test'
             }
         }
+        stage('Build Docker Image (Spring Part)') {
+                    steps {
+                        script {
+                            def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}") // Tagging the image with the app version
+                            echo "Built Docker Image: ${dockerImage.id}"
+                        }
+                    }
+                }
 
         stage('SonarQube Analysis') {
             steps {
@@ -61,13 +69,6 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image (Spring Part)') {
-            steps {
-                script {
-                    def dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.APP_VERSION}") // Tagging the image with the app version
-                    echo "Built Docker Image: ${dockerImage.id}"
-                }
-            }
-        }
+
     }
 }
