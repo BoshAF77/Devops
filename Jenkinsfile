@@ -82,13 +82,13 @@ pipeline {
                   }
 
 
-          stage('Docker Compose (BackEnd MySql)') {
-              steps {
-                  script {
-                      sh 'docker compose -f ${WORKSPACE}/compose/Docker-compose.yml up -d'
+          stage('Docker compose (BackEnd MySql)') {
+                      steps {
+                          script {
+                              sh 'docker compose -f ${WORKSPACE}/Docker-compose.yml up -d'
+                          }
+                      }
                   }
-              }
-          }
 
           stage('SonarQube Analysis') {
               steps {
