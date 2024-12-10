@@ -35,5 +35,10 @@ pipeline {
                 sh 'mvn clean package'  // This will compile and package the JAR
             }
         }
+        stage('Mockito Tests') {
+                    steps {
+                        sh 'mvn test'
+                    }
+                }
     }
 }
