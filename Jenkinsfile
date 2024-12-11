@@ -113,6 +113,18 @@ pipeline {
             }
         }
 
+         post {
+                success {
+                    mail to: 'anisfarjallah0705@gmail.com',
+                         subject: "Pipeline Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                         body: "Bonjour,\n\nLe pipeline '${env.JOB_NAME}' a réussi au build #${env.BUILD_NUMBER}.\n\nCordialement,\nL'équipe Jenkins"
+                }
+                failure {
+                    mail to: 'anisfarjallah0705@gmail.com',
+                         subject: "Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                         body: "Bonjour,\n\nLe pipeline '${env.JOB_NAME}' a échoué au build #${env.BUILD_NUMBER}. Veuillez vérifier les logs pour plus de détails.\n\nCordialement,\nL'équipe Jenkins"
+                }
+
 
     }
 
