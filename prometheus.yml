@@ -3,6 +3,6 @@ global:
 
 scrape_configs:
   - job_name: 'tp-foyer'
-    metrics_path: '/actuator/prometheus'
+    metrics_path: '/metrics'
     static_configs:
-      - targets: ['192.168.50.4:9090']
+      - targets: ['172.18.0.10:9090']
