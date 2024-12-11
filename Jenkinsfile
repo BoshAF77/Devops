@@ -114,21 +114,6 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
-        }
-        success {
-            echo 'Pipeline executed successfully!'
-            mail to: 'anisfarjallah0705@gmail.com',
-                subject: "Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Good news! The pipeline ${env.JOB_NAME} has completed successfully. Check the details here: ${env.BUILD_URL}"
-        }
-        failure {
-            echo 'Pipeline failed.'
-            mail to: 'anisfarjallah0705@gmail.com',
-                subject: "Jenkins Pipeline Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Unfortunately, the pipeline ${env.JOB_NAME} has failed. Please check the details here: ${env.BUILD_URL}"
-        }
+
     }
 }
