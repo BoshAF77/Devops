@@ -113,6 +113,39 @@ pipeline {
             }
         }
     }
+  stage('Build and Run Grafana') {
+                    steps {
+                        script {
+                            // Stop and remove the existing Grafana container if it exists
+                            sh 'docker rm -f grafana || true'
+
+                            // Run Grafana container
+                            sh """
+                            docker run -d --name grafana \
+                                -p 3000:3000 \
+                                grafana/grafana
+                            """
+                        }
+                    }
+                }
+
+                stage('Build and Run Prometheus') {
+                    steps {
+                        script {
+                            // Stop and remove the existing Prometheus container if it exists
+                            sh 'docker rm -f prometheus-p || true'
+
+                            // Run Prometheus container
+                            sh """
+                            docker run -d --name prometheus-p \
+                                -p 9091:9091 \
+                                -v \$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
+                                prom/prometheus
+                            """
+                        }
+                    }
+                }
+    }
 
 
     }
