@@ -88,24 +88,6 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'SonarQube_Token', variable: 'SONAR_TOKEN')]) {
-                    sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
-                }
-            }
-        }
-
-        stage('Deploy to Nexus') {
-            steps {
-                script {
-                    withEnv(["MAVEN_HOME=${tool 'M2_HOME'}"]) {
-                        sh 'mvn deploy -s /usr/share/maven/conf/settings.xml'
-                    }
-                }
-            }
-        }
-
         stage('Docker compose (BackEnd MySql)') {
             steps {
                 script {
