@@ -87,23 +87,24 @@ pipeline {
                 sh 'ls -l ${WORKSPACE}'
             }
         }
-           stage('SonarQube Analysis') {
-                    steps {
-                        withCredentials([string(credentialsId: 'SonarQube_Token', variable: 'SONAR_TOKEN')]) {
-                            sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
-                        }
-                    }
-                }
 
-                stage('Deploy to Nexus') {
-                    steps {
-                        script {
-                            withEnv(["MAVEN_HOME=${tool 'M2_HOME'}"]) {
-                                sh 'mvn deploy -s /usr/share/maven/conf/settings.xml'
-                            }
-                        }
+        stage('SonarQube Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'SonarQube_Token', variable: 'SONAR_TOKEN')]) {
+                    sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                }
+            }
+        }
+
+        stage('Deploy to Nexus') {
+            steps {
+                script {
+                    withEnv(["MAVEN_HOME=${tool 'M2_HOME'}"]) {
+                        sh 'mvn deploy -s /usr/share/maven/conf/settings.xml'
                     }
                 }
+            }
+        }
 
         stage('Docker compose (BackEnd MySql)') {
             steps {
@@ -112,22 +113,18 @@ pipeline {
                 }
             }
         }
-
-         post {
-                success {
-                    mail to: 'anisfarjallah0705@gmail.com',
-                         subject: "Pipeline Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                         body: "Bonjour,\n\nLe pipeline '${env.JOB_NAME}' a réussi au build #${env.BUILD_NUMBER}.\n\nCordialement,\nL'équipe Jenkins"
-                }
-                failure {
-                    mail to: 'anisfarjallah0705@gmail.com',
-                         subject: "Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                         body: "Bonjour,\n\nLe pipeline '${env.JOB_NAME}' a échoué au build #${env.BUILD_NUMBER}. Veuillez vérifier les logs pour plus de détails.\n\nCordialement,\nL'équipe Jenkins"
-                }
-
-         }
     }
 
+    post {
+        success {
+            mail to: 'anisfarjallah0705@gmail.com',
+                subject: "Pipeline Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Bonjour,\n\nLe pipeline '${env.JOB_NAME}' a réussi au build #${env.BUILD_NUMBER}.\n\nCordialement,\nL'équipe Jenkins"
+        }
+        failure {
+            mail to: 'anisfarjallah0705@gmail.com',
+                subject: "Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Bonjour,\n\nLe pipeline '${env.JOB_NAME}' a échoué au build #${env.BUILD_NUMBER}. Veuillez vérifier les logs pour plus de détails.\n\nCordialement,\nL'équipe Jenkins"
+        }
+    }
 }
-
-
