@@ -150,7 +150,7 @@ pipeline {
                   success {
                       echo 'Pipeline executed successfully!'
                       // Send success email
-                      mail to: 'kdidifiras30@gmail.com',
+                      mail to: 'anisfarjallah0705@@gmail.com',
                           subject: "Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                           body: "Good news! The pipeline ${env.JOB_NAME} has completed successfully. Check the details here: ${env.BUILD_URL}"
                   }
