@@ -125,7 +125,7 @@ pipeline {
                          body: "Bonjour,\n\nLe pipeline '${env.JOB_NAME}' a échoué au build #${env.BUILD_NUMBER}. Veuillez vérifier les logs pour plus de détails.\n\nCordialement,\nL'équipe Jenkins"
                 }
 
-
+         }
     }
 
 }
