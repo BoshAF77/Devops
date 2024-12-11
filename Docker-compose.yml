@@ -1,7 +1,6 @@
-version: "3.8"  # Specify Docker Compose version
 services:
   app:
-    image: alpine-container  # Use dynamic version tag
+    image: alpine-container
     build: ./  # Build context
     container_name: app_container
     ports:
@@ -9,21 +8,23 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/db?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD:   # Set your MySQL root password
+      SPRING_DATASOURCE_PASSWORD:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - db
       - prometheus
+
   db:
     image: mysql:8.0
     container_name: mysql_container
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD:    # Same password as above
+      MYSQL_ROOT_PASSWORD: your_password_here
       MYSQL_DATABASE: db
     volumes:
       - mysql_data:/var/lib/mysql
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus_container
@@ -33,13 +34,12 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
   grafana:
-      image: grafana/grafana
-      container_name: grafana_container
-      ports:
-        - "3001:3001"
-      depends_on:
-        - prometheus
+    image: grafana/grafana
+    container_name: grafana_container
+    ports:
+      - "3000:3000"  # Fixed port
+    depends_on:
+      - prometheus
 
 volumes:
-  mysql_data:  # Define the volume at the root level
-
+  mysql_data:
